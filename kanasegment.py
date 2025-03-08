@@ -2,16 +2,12 @@
 from collections import namedtuple
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageColor
+from ruamel.yaml import YAML
 
 Kana = namedtuple("Kana", "romaji kana position supported segments")
 
 # User config --------------------------------------------------------------------------
 source = "designs/v0/v0.chars.txt"  # also requires *.seg.txt and *.seg.png
-
-color_bg = (255, 255, 255)
-color_annotation = (0, 0, 0)
-color_on = (255, 0, 0)
-color_off = (200, 200, 200)
 
 # Initialization -----------------------------------------------------------------------
 kanalist = []
@@ -23,6 +19,7 @@ fn = fn.parent / fn.stem.split(".")[0]  # https://stackoverflow.com/a/31890400/1
 file_charlist = fn.parent / (fn.stem + ".chars.txt")
 file_seglist = fn.parent / (fn.stem + ".seg.txt")
 file_segimg = fn.parent / (fn.stem + ".seg.png")
+file_config = fn.parent / (fn.stem + ".cfg.yml")
 dir_out = Path(fn.parent / "output")
 dir_out.mkdir(parents=True, exist_ok=True)
 
@@ -58,13 +55,23 @@ with open(file_seglist, "r", encoding="utf-8") as f:
         segment_coords.append(coords)
 segment_stats = [0 for _ in segment_coords]
 
+# Load color config --------------------------------------------------------------------
+yaml = YAML(typ="safe")
+with open(file_config, "r", encoding="utf-8") as f:
+    config = yaml.load(f)
+color_bg_in = (255, 255, 255)  # hardcoded
+color_annotation = (0, 0, 0)  # hardcoded
+color_bg_out = tuple(config["colors"]["background"])
+color_on = tuple(config["colors"]["active"])
+color_off = tuple(config["colors"]["inactive"])
+
 # Prepare for image generation ---------------------------------------------------------
 img_template = Image.open(file_segimg).convert("RGB")
 tile_size = Image.open(file_segimg).convert("RGB").size
 num_tiles = (5, 11)
 overview_size = tuple([n * m for n, m in zip(tile_size, num_tiles)])
 img_tile = Image.new("RGB", overview_size)
-ImageDraw.floodfill(img_tile, (0, 0), color_bg)
+ImageDraw.floodfill(img_tile, (0, 0), color_bg_out)
 
 # Generate segment images for each kana ------------------------------------------------
 for kana in kanalist_supported:
@@ -75,7 +82,7 @@ for kana in kanalist_supported:
     for y in range(tile_size[1]):
         for x in range(tile_size[0]):
             if pixdata[x, y] == color_annotation:
-                pixdata[x, y] = color_bg
+                pixdata[x, y] = color_bg_in
     # color segments accordingly
     for _i, seg in enumerate(segment_coords):
         idx = _i + 1
@@ -84,6 +91,11 @@ for kana in kanalist_supported:
             segment_stats[_i] = segment_stats[_i] + 1
         else:
             ImageDraw.floodfill(img_kana, seg, color_off)
+    # color background
+    for y in range(tile_size[1]):
+        for x in range(tile_size[0]):
+            if pixdata[x, y] == color_bg_in:
+                pixdata[x, y] = color_bg_out
 
     img_kana.save(dir_out / f"{kana.position:02d}_{kana.romaji}.png", "PNG")
 

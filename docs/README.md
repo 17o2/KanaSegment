@@ -57,6 +57,11 @@ o   オ
 ...
 ```
 
+### `<filename>.cfg.yml`
+
+Example (see [`v0.cfg.yml`](../designs/v0/v0.cfg.yml)):
+
+
 ## Output
 
 ### Individual characters

@@ -1,0 +1,11 @@
+colors:
+  #output
+  # red on white
+  background: [255, 255, 255]
+  active: [255, 0, 0]
+  inactive: [200, 200, 200]
+
+  # green on dark
+  # background: [12, 14, 18]
+  # active: [164, 246, 68]
+  # inactive: [22, 35, 9]
