@@ -32,7 +32,7 @@ with open(file_charlist, "r", encoding="utf-8") as f:
         line = line.strip()
         if line == "":
             continue
-        lineitems = line.split("\t")
+        lineitems = [l for l in line.split(" ") if l]
         romaji = lineitems[0]
         kana = lineitems[1]
         if len(lineitems) > 2:  # kana has coordinates -> kana is supported
