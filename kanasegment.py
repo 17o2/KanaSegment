@@ -61,17 +61,25 @@ with open(file_config, "r", encoding="utf-8") as f:
     config = yaml.load(f)
 color_bg_in = (255, 255, 255)  # hardcoded
 color_annotation = (0, 0, 0)  # hardcoded
-color_bg_out = tuple(config["colors"]["background"])
-color_on = tuple(config["colors"]["active"])
-color_off = tuple(config["colors"]["inactive"])
+
+if isinstance(config["colors"], dict):
+    print("one color config")
+    variants = [config["colors"]]
+    variants[0]["name"] = ""  # empty name if only one color config found
+elif isinstance(config["colors"], list):
+    variants = config["colors"]
+
 
 # Prepare for image generation ---------------------------------------------------------
 img_template = Image.open(file_segimg).convert("RGB")
 tile_size = Image.open(file_segimg).convert("RGB").size
 num_tiles = (5, 11)
 overview_size = tuple([n * m for n, m in zip(tile_size, num_tiles)])
-img_tile = Image.new("RGB", overview_size)
-ImageDraw.floodfill(img_tile, (0, 0), color_bg_out)
+
+for variant in variants:
+    variant["img_tile"] = Image.new("RGB", overview_size)
+    img_tile = variant["img_tile"]
+    ImageDraw.floodfill(img_tile, (0, 0), tuple(variant["background"]))
 
 # Generate segment images for each kana ------------------------------------------------
 for kana in kanalist_supported:
@@ -84,27 +92,44 @@ for kana in kanalist_supported:
             if pixdata[x, y] == color_annotation:
                 pixdata[x, y] = color_bg_in
     # color segments accordingly
-    for _i, seg in enumerate(segment_coords):
-        idx = _i + 1
-        if idx in kana.segments:
-            ImageDraw.floodfill(img_kana, seg, color_on)
-            segment_stats[_i] = segment_stats[_i] + 1
+    for variant in variants:
+        img_tile = variant["img_tile"]
+
+        for _i, seg in enumerate(segment_coords):
+            idx = _i + 1
+            if idx in kana.segments:
+                ImageDraw.floodfill(img_kana, seg, tuple(variant["active"]))
+                segment_stats[_i] = segment_stats[_i] + 1
+            else:
+                ImageDraw.floodfill(img_kana, seg, tuple(variant["inactive"]))
+        # color background
+        for y in range(tile_size[1]):
+            for x in range(tile_size[0]):
+                if pixdata[x, y] == color_bg_in:
+                    pixdata[x, y] = tuple(variant["background"])
+
+        if variant["name"] == "":
+            variant_name = ""
         else:
-            ImageDraw.floodfill(img_kana, seg, color_off)
-    # color background
-    for y in range(tile_size[1]):
-        for x in range(tile_size[0]):
-            if pixdata[x, y] == color_bg_in:
-                pixdata[x, y] = color_bg_out
+            variant_name = "." + variant["name"]
+        img_kana.save(
+            dir_out / f"{kana.position:02d}_{kana.romaji}{variant_name}.png", "PNG"
+        )
 
-    img_kana.save(dir_out / f"{kana.position:02d}_{kana.romaji}.png", "PNG")
-
-    tile_coords = (
-        tile_size[0] * ((kana.position - 1) % num_tiles[0]),
-        tile_size[1] * ((kana.position - 1) // num_tiles[0]),
-    )
-    img_tile.paste(img_kana, tile_coords)
+        tile_coords = (
+            tile_size[0] * ((kana.position - 1) % num_tiles[0]),
+            tile_size[1] * ((kana.position - 1) // num_tiles[0]),
+        )
+        img_tile.paste(img_kana, tile_coords)
 print()
 
 # Generate overview image --------------------------------------------------------------
-img_tile.save(dir_out / "00_overview.png", "PNG")
+for variant in variants:
+    img_tile = variant["img_tile"]
+
+    if variant["name"] == "":
+        variant_name = ""
+    else:
+        variant_name = "." + variant["name"]
+
+    img_tile.save(dir_out / f"00_overview{variant_name}.png", "PNG")

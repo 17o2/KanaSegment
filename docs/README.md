@@ -15,7 +15,7 @@ Graphical representation of segments to be used.
 - All pixels of a segment must have the same (arbitrary) color
 - Touching segments must have different colors
 - Black (`#000000`) is reserved for annotations which will be removed in the final image; this is helpful to number the segments directly inside the image
-- The code allows configuring background, active and inactive segment color in the generated images
+- Colors for the generated images (background, active and inactive segments) can be configured separately (see below)
 
 Example:
 
@@ -59,6 +59,8 @@ o   オ
 
 ### `<filename>.cfg.yml`
 
+Used to configure multiple color variants for the output.
+
 Example (see [`v0.cfg.yml`](../designs/v0/v0.cfg.yml)):
 
 
@@ -67,10 +69,16 @@ Example (see [`v0.cfg.yml`](../designs/v0/v0.cfg.yml)):
 ### Individual characters
 
 For each character that includes a segment list, an image is generated.
+If multiple color variants are defined, one image per variant and character is generated.
 
 Example:
 
-![Example character image output](../designs/v0/output/01_a.png)
+![Example character image output](../designs/v0/output/01_a.light.png)
+![Example character image output](../designs/v0/output/02_i.light.png)
+![Example character image output](../designs/v0/output/03_u.light.png)
+![Example character image output](../designs/v0/output/01_a.dark.png)
+![Example character image output](../designs/v0/output/02_i.dark.png)
+![Example character image output](../designs/v0/output/03_u.dark.png)
 
 ### Overview
 
@@ -78,4 +86,5 @@ A tiled overview showing all supported characters is also generated.
 
 Example:
 
-![Example character image output](../designs/v0/output/00_overview.png)
+![Example character image output](../designs/v0/output/00_overview.light.png)
+![Example character image output](../designs/v0/output/00_overview.dark.png)

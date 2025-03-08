@@ -1,2 +1,4 @@
-!output/00_overview.png
-!output/01_a.png
+!output/00_overview.*.png
+!output/01_a.*.png
+!output/02_i.*.png
+!output/03_u.*.png
