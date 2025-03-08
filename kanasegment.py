@@ -5,6 +5,7 @@ from PIL import Image, ImageDraw, ImageColor
 
 Kana = namedtuple("Kana", "romaji kana position supported segments")
 
+# User config --------------------------------------------------------------------------
 source = "designs/v0/v0.chars.txt"  # also requires *.seg.txt and *.seg.png
 
 color_bg = (255, 255, 255)
@@ -12,6 +13,7 @@ color_annotation = (0, 0, 0)
 color_on = (255, 0, 0)
 color_off = (200, 200, 200)
 
+# Initialization -----------------------------------------------------------------------
 kanalist = []
 segment_coords = []
 segment_stats = []
@@ -24,6 +26,7 @@ file_segimg = fn.parent / (fn.stem + ".seg.png")
 dir_out = Path(fn.parent / "output")
 dir_out.mkdir(parents=True, exist_ok=True)
 
+# Read list of kana and corresponding segments -----------------------------------------
 with open(file_charlist, "r", encoding="utf-8") as f:
     for idx, line in enumerate(f):
         line = line.strip()
@@ -47,6 +50,7 @@ print(
 )
 kanalist_supported = [k for k in kanalist if k.supported]
 
+# Load segment description file --------------------------------------------------------
 with open(file_seglist, "r", encoding="utf-8") as f:
     for line in f:
         _coords = line.split(",")
@@ -54,25 +58,41 @@ with open(file_seglist, "r", encoding="utf-8") as f:
         segment_coords.append(coords)
 segment_stats = [0 for _ in segment_coords]
 
+# Prepare for image generation ---------------------------------------------------------
+img_template = Image.open(file_segimg).convert("RGB")
+tile_size = Image.open(file_segimg).convert("RGB").size
+num_tiles = (5, 11)
+overview_size = tuple([n * m for n, m in zip(tile_size, num_tiles)])
+img_tile = Image.new("RGB", overview_size)
+ImageDraw.floodfill(img_tile, (0, 0), color_bg)
+
+# Generate segment images for each kana ------------------------------------------------
 for kana in kanalist_supported:
     print(kana.kana, end="")
-    img = Image.open(file_segimg).convert("RGB")
-    pixdata = img.load()
+    img_kana = img_template.copy()
+    pixdata = img_kana.load()
     # remove annotations
-    for y in range(img.size[1]):
-        for x in range(img.size[0]):
+    for y in range(tile_size[1]):
+        for x in range(tile_size[0]):
             if pixdata[x, y] == color_annotation:
                 pixdata[x, y] = color_bg
     # color segments accordingly
     for _i, seg in enumerate(segment_coords):
         idx = _i + 1
         if idx in kana.segments:
-            ImageDraw.floodfill(img, seg, color_on)
+            ImageDraw.floodfill(img_kana, seg, color_on)
             segment_stats[_i] = segment_stats[_i] + 1
         else:
-            ImageDraw.floodfill(img, seg, color_off)
+            ImageDraw.floodfill(img_kana, seg, color_off)
 
-    img.save(dir_out / f"{kana.position:02d}_{kana.romaji}.png", "PNG")
+    img_kana.save(dir_out / f"{kana.position:02d}_{kana.romaji}.png", "PNG")
+
+    tile_coords = (
+        tile_size[0] * ((kana.position - 1) % num_tiles[0]),
+        tile_size[1] * ((kana.position - 1) // num_tiles[0]),
+    )
+    img_tile.paste(img_kana, tile_coords)
 print()
 
-# print(segment_stats)
+# Generate overview image --------------------------------------------------------------
+img_tile.save(dir_out / "00_overview.png", "PNG")
