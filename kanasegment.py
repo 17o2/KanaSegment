@@ -73,7 +73,7 @@ elif isinstance(config["colors"], list):
 # Prepare for image generation ---------------------------------------------------------
 img_template = Image.open(file_segimg).convert("RGB")
 tile_size = Image.open(file_segimg).convert("RGB").size
-num_tiles = (5, 11)
+num_tiles = (5, (max([k.position for k in kanalist_supported]) - 1) // 5 + 1)
 overview_size = tuple([n * m for n, m in zip(tile_size, num_tiles)])
 
 for variant in variants:
