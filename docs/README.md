@@ -2,6 +2,9 @@
 
 Attempting to design a 16-segment display optimized for katakana characters.
 
+![Example character image output](../designs/v1/output/00_overview.light.png)
+![Example character image output](../designs/v1/output/00_overview.dark.png)
+
 ## Input
 
 KanaSegment requires a group of similarly named input files with the following file extensions:
