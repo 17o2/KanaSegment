@@ -93,14 +93,15 @@ for kana in kanalist_supported:
             if pixdata[x, y] == color_annotation:
                 pixdata[x, y] = color_bg_in
     # color segments accordingly
-    for variant in variants:
+    for i_var, variant in enumerate(variants):
         img_tile = variant["img_tile"]
 
         for _i, seg in enumerate(segment_coords):
             idx = _i + 1
             if idx in kana.segments:
                 ImageDraw.floodfill(img_kana, seg, tuple(variant["active"]))
-                segment_stats[_i] = segment_stats[_i] + 1
+                if i_var == 0:
+                    segment_stats[_i] = segment_stats[_i] + 1
             else:
                 ImageDraw.floodfill(img_kana, seg, tuple(variant["inactive"]))
         # color background
