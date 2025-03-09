@@ -82,6 +82,7 @@ for variant in variants:
     ImageDraw.floodfill(img_tile, (0, 0), tuple(variant["background"]))
 
 # Generate segment images for each kana ------------------------------------------------
+print("Supported:   ", end="")
 for kana in kanalist_supported:
     print(kana.kana, end="")
     img_kana = img_template.copy()
@@ -121,6 +122,11 @@ for kana in kanalist_supported:
             tile_size[1] * ((kana.position - 1) // num_tiles[0]),
         )
         img_tile.paste(img_kana, tile_coords)
+print()
+print("Unsupported: ", end="")
+for kana in kanalist:
+    if not kana.supported:
+        print(kana.kana, end="")
 print()
 
 # Generate overview image --------------------------------------------------------------
