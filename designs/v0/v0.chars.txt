@@ -44,15 +44,15 @@ ru  ル
 re  レ
 ro  ロ
 wa  ワ  9,6,7,11,14
+wi  ヰ
 
-
-
+we  ヱ
 wo  ヲ  1,6,7,4,11,14
 n   ン  6,14,11
 
-
-
-
+choonpu     ー  5,6,7,8
+dakuten     ゛  2,3
+handakuten  ゜
 xa  ァ
 xi  ィ
 xu  ゥ
@@ -63,7 +63,3 @@ xyu ュ
 xyo ョ
 
 xtsu ッ
-choonpu     ー  5,6,7,8
-dakuten     ゛  2,3
-handakuten  ゜
-
