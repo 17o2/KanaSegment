@@ -1,0 +1,9 @@
+colors:
+  - name: light # red on white
+    background: [255, 255, 255]
+    active: [255, 0, 0]
+    inactive: [200, 200, 200]
+  - name: dark # green on dark
+    background: [14, 17, 23] # for GitHub dark mode
+    active: [164, 246, 68]
+    inactive: [22, 35, 9]
